@@ -18,41 +18,29 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Download Gradle 8.5
-        run: |
-          wget -q "https://services.gradle.org/distributions/gradle-8.5-bin.zip" -O /tmp/gradle.zip
-          unzip -q /tmp/gradle.zip -d /tmp/
-          echo "/tmp/gradle-8.5/bin" >> $GITHUB_PATH
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Download Android SDK
+      - name: Install specific SDK versions
         run: |
-          ANDROID_SDK_ROOT="$HOME/android-sdk"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          cd "$ANDROID_SDK_ROOT/cmdline-tools"
-          wget -q "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -O tools.zip
-          unzip -q tools.zip
-          mv cmdline-tools latest
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses
-          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - name: Create local.properties
-        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" >> local.properties
 
-      - name: Verify setup
-        run: |
-          gradle --version
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Build debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
+      - name: Build APK
+        run: gradle assembleDebug --no-daemon
 
-      - name: List APK location
-        run: find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
+      - name: Check APK exists
+        run: ls -la app/build/outputs/apk/debug/ 2>/dev/null || find . -name "*.apk" -type f 2>/dev/null || echo "APK NOT FOUND"
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: 随便看-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: suibiankan-apk
+          path: "**/*.apk"
           retention-days: 90
