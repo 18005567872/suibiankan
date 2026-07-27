@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches: [main, master]
-  workflow_dispatch:  # Allows manual trigger from GitHub web UI
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,45 +19,30 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
         with:
-          packages: 'platforms;android-34 build-tools;34.0.0'
+          gradle-version: 8.5
 
-      - name: Generate Gradle wrapper
+      - name: Setup Android SDK
         run: |
-          # Create gradle wrapper properties
-          mkdir -p gradle/wrapper
-          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
-          networkTimeout=10000
-          validateDistributionUrl=true
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
+          ANDROID_SDK_ROOT=$HOME/android-sdk
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          cd $ANDROID_SDK_ROOT/cmdline-tools
+          curl -sL -o tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -qo tools.zip
+          mv cmdline-tools latest
+          rm tools.zip
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" > /dev/null 2>&1
 
-      - name: Make gradlew executable
+      - name: Create local.properties
         run: |
-          # Create a minimal gradlew script
-          cat > gradlew << 'EOF'
-          #!/bin/bash
-          export GRADLE_USER_HOME="${HOME}/.gradle"
-          GRADLE_VERSION="8.5"
-          GRADLE_DIST="gradle-${GRADLE_VERSION}-bin.zip"
-          GRADLE_DIR="${GRADLE_USER_HOME}/wrapper/dists/${GRADLE_DIST}"
-          if [ ! -f "${GRADLE_DIR}/gradle-${GRADLE_VERSION}/bin/gradle" ]; then
-            mkdir -p "${GRADLE_DIR}"
-            curl -sL "https://services.gradle.org/distributions/${GRADLE_DIST}" -o "${GRADLE_DIR}/${GRADLE_DIST}"
-            unzip -qo "${GRADLE_DIR}/${GRADLE_DIST}" -d "${GRADLE_DIR}"
-          fi
-          exec "${GRADLE_DIR}/gradle-${GRADLE_VERSION}/bin/gradle" "$@"
-          EOF
-          chmod +x gradlew
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
