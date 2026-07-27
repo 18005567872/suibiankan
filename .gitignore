@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+build/
+*/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Android
+local.properties
+*.apk
+*.aab
+*.dex
+*.class
+*.log
+gen/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Memory
+memory/
+.claude/

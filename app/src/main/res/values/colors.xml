@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary brand colors -->
+    <color name="primary">#FF448AFF</color>
+    <color name="primary_dark">#FF2962FF</color>
+    <color name="accent">#FFFF6D00</color>
+
+    <!-- Focus colors (visible on TV) -->
+    <color name="focus_border">#FF448AFF</color>
+    <color name="focus_background">#33448AFF</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#FFF5F5F5</color>
+    <color name="text_secondary">#B3BDBDBD</color>
+    <color name="text_hint">#80BDBDBD</color>
+
+    <!-- Background colors -->
+    <color name="background_dark">#FF1A1A1A</color>
+    <color name="background_card">#FF2D2D2D</color>
+    <color name="background_overlay">#B3000000</color>
+
+    <!-- Status colors -->
+    <color name="error">#FFEF5350</color>
+    <color name="success">#FF66BB6A</color>
+    <color name="warning">#FFFFA726</color>
+
+    <!-- Search orb color -->
+    <color name="search_orb">#FF448AFF</color>
+</resources>
